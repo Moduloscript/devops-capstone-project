@@ -10,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: python:3.9-slim
 
     services:
       postgres:
@@ -30,10 +29,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install system dependencies
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends gcc libpq-dev
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
 
       - name: Install dependencies
         run: |
