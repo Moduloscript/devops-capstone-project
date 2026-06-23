@@ -30,6 +30,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends gcc libpq-dev
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip wheel
