@@ -1,0 +1,8 @@
+HTTP/1.1 200 OK
+Server: Werkzeug/3.1.8 Python/3.12.2
+Date: Tue, 23 Jun 2026 05:58:03 GMT
+Content-Type: application/json
+Content-Length: 389
+Connection: close
+
+[{"address":"123 Main St","date_joined":"2026-06-23","email":"john@example.com","id":1,"name":"John Doe","phone_number":"555-1234"},{"address":"123 Main St.","date_joined":"2026-06-23","email":"john@doe.com","id":2,"name":"John Doe","phone_number":"555-1212"},{"address":"123 Main St.","date_joined":"2026-06-23","email":"john@doe.com","id":3,"name":"John Doe","phone_number":"555-1212"}]
