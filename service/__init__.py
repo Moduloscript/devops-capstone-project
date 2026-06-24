@@ -13,9 +13,11 @@ from service.common import log_handlers
 app = Flask(__name__)
 app.config.from_object(config)
 
-# Add security headers
+# Add security headers and CORS support
 from flask_talisman import Talisman  # noqa: E402
+from flask_cors import CORS  # noqa: E402
 talisman = Talisman(app)
+CORS(app)
 
 # Import the routes After the Flask app is created
 # pylint: disable=wrong-import-position, cyclic-import, wrong-import-order
