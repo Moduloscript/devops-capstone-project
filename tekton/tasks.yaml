@@ -11,7 +11,7 @@ spec:
       type: string
   steps:
     - name: echo-message
-      image: alpine:3
+      image: us.icr.io/accounts-namespace/alpine:3
       command: [/bin/echo]
       args: ["$(params.message)"]
 ---
@@ -25,7 +25,7 @@ spec:
     - name: source
   steps:
     - name: remove
-      image: alpine:3
+      image: us.icr.io/accounts-namespace/alpine:3
       env:
         - name: WORKSPACE_SOURCE_PATH
           value: $(workspaces.source.path)
@@ -49,4 +49,3 @@ spec:
           # Delete files and directories starting with .. plus any other character
           rm -rf "${WORKSPACE_SOURCE_PATH}"/..?*
         fi
-
