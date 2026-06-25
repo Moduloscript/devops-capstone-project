@@ -16,7 +16,8 @@ app.config.from_object(config)
 # Add security headers and CORS support
 from flask_talisman import Talisman  # noqa: E402
 from flask_cors import CORS  # noqa: E402
-talisman = Talisman(app)
+# Disable force_https so kubelet HTTP health probes don't get redirected to HTTPS
+talisman = Talisman(app, force_https=False)
 CORS(app)
 
 # Import the routes After the Flask app is created

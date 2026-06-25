@@ -16,16 +16,14 @@ spec:
     spec:
       containers:
         - name: postgresql
-          image: postgres:alpine
+          image: us.icr.io/accounts-namespace/postgres:alpine
           ports:
             - containerPort: 5432
           env:
-            - name: POSTGRESQL_USER
+            - name: POSTGRES_USER
               value: postgres
-            - name: POSTGRESQL_PASSWORD
+            - name: POSTGRES_PASSWORD
               value: postgres
-            - name: POSTGRESQL_DATABASE
-              value: accounts
             - name: POSTGRES_DB
               value: accounts
           livenessProbe:
