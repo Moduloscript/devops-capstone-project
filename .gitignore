@@ -1,3 +1,7 @@
+# Temp scripts
+check_pr.py
+remove_temp_file.py
+
 # Local OS metadata
 .DS_Store
 Thumbs.db
