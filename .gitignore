@@ -115,3 +115,7 @@ ENV/
 deploy/overlays/*/secret.env
 # Sealed secrets (decrypted)
 deploy/overlays/openshift/*.decrypted.yaml
+
+# opencode local config (contains secrets - do not commit)
+opencode.json
+opencode.json.*

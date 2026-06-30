@@ -8,7 +8,7 @@
       "plan_name": "next-devops-completion",
       "status": "completed",
       "started_at": "2026-06-30T04:18:05.442Z",
-      "updated_at": "2026-06-30T05:12:51.725Z",
+      "updated_at": "2026-06-30T05:35:01.560Z",
       "session_ids": [
         "opencode:ses_0e90ef7b6ffetRZhd3sx8RiYPd"
       ],
@@ -16,13 +16,15 @@
         "opencode:ses_0e90ef7b6ffetRZhd3sx8RiYPd": "direct"
       },
       "agent": "atlas",
-      "task_sessions": {}
+      "task_sessions": {},
+      "ended_at": "2026-06-30T05:35:01.559Z",
+      "elapsed_ms": 4616117
     }
   },
   "active_plan": "C:\\Users\\T490\\Documents\\modulo-vault\\devops-capstone-project\\.omo\\plans\\next-devops-completion.md",
   "started_at": "2026-06-30T04:18:05.442Z",
   "status": "completed",
-  "updated_at": "2026-06-30T05:12:51.725Z",
+  "updated_at": "2026-06-30T05:35:01.560Z",
   "session_ids": [
     "opencode:ses_0e90ef7b6ffetRZhd3sx8RiYPd"
   ],
@@ -31,5 +33,7 @@
   },
   "plan_name": "next-devops-completion",
   "task_sessions": {},
-  "agent": "atlas"
+  "agent": "atlas",
+  "ended_at": "2026-06-30T05:35:01.559Z",
+  "elapsed_ms": 4616117
 }
