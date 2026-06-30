@@ -53,10 +53,10 @@ spec:
       default: deploy/overlays/k3d
   steps:
     - name: deploy
-      image: bitnami/kubectl:1.31
+      image: alpine/kubectl:latest
       workingDir: $(workspaces.source.path)
       script: |
-        #!/bin/bash
+        #!/bin/sh
         set -e
 
         echo "=== Applying kustomize overlay: $(params.kustomize-dir) ==="
