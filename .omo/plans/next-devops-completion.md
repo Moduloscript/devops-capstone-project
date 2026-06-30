@@ -304,7 +304,7 @@ This keeps backward compatibility for tests (which don't set SECRET_KEY env) but
   QA scenarios: happy — all model tests pass with new API; failure — use `db.session.get(cls, "not-an-id")` and verify it returns None gracefully. Evidence .omo/evidence/task-23-next-devops-completion.txt
   Commit: Y | refactor(models): migrate Query.get() to db.session.get() for SQLAlchemy 2.0 compat
 
-- [ ] 24. Commit dirty git tree and delete stale branches
+- [x] 24. Commit dirty git tree and delete stale branches
   What to do: (a) Stage all changes from this plan's execution: `git add -A`. (b) Commit with message: `feat: complete DevOps capstone — Tekton CD pipeline, Kustomize deployment, Ingress, secrets, test coverage`. (c) Delete stale local branches that were already merged to main: first run `git branch` to list them, then delete with `git branch -d add-cors-headers add-security-headers dev-setup delete-account deploy-kubernetes add-ci-build add-docker` (verify each with `git branch` first — if any branch doesn't exist, skip it; if `git branch -d` refuses because it's not merged, use `git branch -D` only after verifying the commits are in main via `git log --cherry-pick main..<branch>`). Must NOT push to remote without explicit user instruction. Must NOT delete the `main` branch.
   Parallelization: Wave 6 | Blocked by: all code todos (1-23) | Blocks: none
   References: `git status` output (10 deleted lab markers + 8 untracked tooling items + all new files from this plan)
