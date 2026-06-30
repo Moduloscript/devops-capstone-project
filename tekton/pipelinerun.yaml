@@ -10,10 +10,13 @@ spec:
     - name: pipeline-workspace
       persistentVolumeClaim:
         claimName: pipelinerun-pvc
+    - name: docker-credentials
+      secret:
+        secretName: docker-config
   params:
     - name: repo-url
       value: https://github.com/Moduloscript/devops-capstone-project
     - name: branch
       value: main
     - name: image-tag
-      value: "1.0"
+      value: "2"

@@ -8,8 +8,8 @@ resources:
 
 images:
   - name: accounts
-    newName: localhost:32000/accounts
-    newTag: "1.0"
+    newName: us.icr.io/accounts-namespace/accounts
+    newTag: "2"
 
 secretGenerator:
   - name: app-secrets
@@ -17,3 +17,38 @@ secretGenerator:
       - secret.env
     options:
       disableNameSuffixHash: true
+
+patches:
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value:
+          - name: icr-secret
+    target:
+      kind: Deployment
+      name: accounts
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: accounts
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/affinity
+        value:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                          - accounts
+                  topologyKey: kubernetes.io/hostname
+    target:
+      kind: Deployment
+      name: accounts

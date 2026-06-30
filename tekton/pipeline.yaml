@@ -1,10 +1,17 @@
 #
 # This pipeline needs the following tasks from Tekton Catalog
 #   - git-clone
-#   - flake8
-#   - nosetests
 #   - buildah
-#   - openshift-client
+#
+# Custom tasks defined in tasks.yaml:
+#   - cleanup
+#   - kubectl-deploy
+#
+# Custom tasks defined in flake8.yaml:
+#   - flake8
+#
+# Custom tasks defined in nosetests.yaml:
+#   - nosetests
 #
 ---
 apiVersion: tekton.dev/v1beta1
@@ -14,12 +21,13 @@ metadata:
 spec:
   workspaces:
     - name: pipeline-workspace
+    - name: docker-credentials
   params:
     - name: repo-url
     - name: branch
       default: main
     - name: image-tag
-      default: "1.0"
+      default: "2"
   tasks:
     - name: init
       workspaces:
@@ -35,10 +43,10 @@ spec:
       taskRef:
         name: git-clone
       params:
-      - name: url
-        value: $(params.repo-url)
-      - name: revision
-        value: $(params.branch)
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.branch)
       runAfter:
         - init
 
@@ -49,14 +57,14 @@ spec:
       taskRef:
         name: flake8
       params:
-      - name: image
-        value: python:3.9-slim
-      - name: args
-        value:
-          - --count
-          - --max-complexity=10
-          - --max-line-length=127
-          - --statistics
+        - name: image
+          value: python:3.9-slim
+        - name: args
+          value:
+            - --count
+            - --max-complexity=10
+            - --max-line-length=127
+            - --statistics
       runAfter:
         - clone
 
@@ -67,12 +75,12 @@ spec:
       taskRef:
         name: nosetests
       params:
-      - name: image
-        value: python:3.9-slim
-      - name: database-url
-        value: postgresql://postgres:postgres@localhost:5432/testdb
-      - name: requirements
-        value: requirements.txt
+        - name: image
+          value: python:3.9-slim
+        - name: database-url
+          value: postgresql://postgres:postgres@localhost:5432/testdb
+        - name: requirements
+          value: requirements.txt
       runAfter:
         - clone
 
@@ -80,36 +88,31 @@ spec:
       workspaces:
         - name: source
           workspace: pipeline-workspace
+        - name: dockerconfig
+          workspace: docker-credentials
       taskRef:
         name: buildah
-        kind: ClusterTask
       params:
-      - name: IMAGE
-        value: localhost:32000/accounts:$(params.image-tag)
-      - name: DOCKERFILE
-        value: ./Dockerfile
-      - name: CONTEXT
-        value: .
-      - name: TLSVERIFY
-        value: "false"
+        - name: IMAGE
+          value: us.icr.io/accounts-namespace/accounts:$(params.image-tag)
+        - name: DOCKERFILE
+          value: ./Dockerfile
+        - name: CONTEXT
+          value: .
+        - name: TLSVERIFY
+          value: "false"
       runAfter:
         - lint
         - test
 
     - name: deploy
       workspaces:
-        - name: manifest-dir
+        - name: source
           workspace: pipeline-workspace
       taskRef:
-        name: openshift-client
-        kind: ClusterTask
+        name: kubectl-deploy
       params:
-      - name: SCRIPT
-        value: |
-          set -e
-          kubectl apply -k deploy/overlays/k3d
-          kubectl set image deployment/accounts app=localhost:32000/accounts:$(params.image-tag) --record
-          kubectl rollout status deployment/accounts --timeout=300s
-          kubectl get pods -l app=accounts
+        - name: image-tag
+          value: $(params.image-tag)
       runAfter:
         - build-image

@@ -33,3 +33,42 @@ spec:
           # Delete files and directories starting with .. plus any other character
           rm -rf "${WORKSPACE_SOURCE_PATH}"/..?*
         fi
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: kubectl-deploy
+spec:
+  description: >-
+    This task applies Kubernetes manifests using kubectl kustomize
+    and performs a rolling restart of the accounts deployment.
+  workspaces:
+    - name: source
+  params:
+    - name: image-tag
+      description: The image tag to deploy
+      default: "2"
+    - name: kustomize-dir
+      description: Path to the kustomize overlay directory
+      default: deploy/overlays/k3d
+  steps:
+    - name: deploy
+      image: bitnami/kubectl:1.31
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/bash
+        set -e
+
+        echo "=== Applying kustomize overlay: $(params.kustomize-dir) ==="
+        kubectl kustomize $(params.kustomize-dir) | kubectl apply -f -
+
+        echo "=== Updating deployment image ==="
+        kubectl set image deployment/accounts \
+          app=us.icr.io/accounts-namespace/accounts:$(params.image-tag) \
+          --record
+
+        echo "=== Waiting for rollout to complete ==="
+        kubectl rollout status deployment/accounts --timeout=300s
+
+        echo "=== Current pods ==="
+        kubectl get pods -l app=accounts

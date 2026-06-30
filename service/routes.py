@@ -101,6 +101,7 @@ def update_account(account_id):
     This endpoint will update an Account based on the body that is posted
     """
     app.logger.info("Request to update an Account with id: %s", account_id)
+    check_content_type("application/json")
     account = Account.find(account_id)
     if not account:
         abort(status.HTTP_404_NOT_FOUND,
