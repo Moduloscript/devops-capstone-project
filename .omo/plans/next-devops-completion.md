@@ -314,10 +314,10 @@ This keeps backward compatibility for tests (which don't set SECRET_KEY env) but
 
 ## Final verification wave
 > Runs in parallel after ALL todos. ALL must APPROVE. Surface results and wait for the user's explicit okay before declaring complete.
-- [ ] F1. Plan compliance audit — verify every todo's acceptance criteria was met; `grep` each file for the expected changes
-- [ ] F2. Code quality review — run `flake8 service --count --max-complexity=10 --max-line-length=127 --statistics` and verify zero errors; run `nosetests -v --with-spec --with-coverage --cover-package=service` and verify all tests pass
-- [ ] F3. Real manual QA — run `kustomize build deploy/overlays/k3d | kubectl apply --dry-run=client -f -` and verify all manifests validate; run `kubectl apply --dry-run=client -f tekton/` and verify all Tekton resources validate
-- [ ] F4. Scope fidelity — verify no out-of-scope changes were made (no pytest, no SQLAlchemy upgrade, no Helm, no GitHub Actions changes, no Route in K3d base)
+- [x] F1. Plan compliance audit — verify every todo's acceptance criteria was met; `grep` each file for the expected changes
+- [x] F2. Code quality review — run `flake8 service --count --max-complexity=10 --max-line-length=127 --statistics` and verify zero errors; run `nosetests -v --with-spec --with-coverage --cover-package=service` and verify all tests pass
+- [x] F3. Real manual QA — run `kustomize build deploy/overlays/k3d | kubectl apply --dry-run=client -f -` and verify all manifests validate; run `kubectl apply --dry-run=client -f tekton/` and verify all Tekton resources validate
+- [x] F4. Scope fidelity — verify no out-of-scope changes were made (no pytest, no SQLAlchemy upgrade, no Helm, no GitHub Actions changes, no Route in K3d base)
 
 ## Commit strategy
 - **Wave 1 commits** (5): `feat(tekton): ...` — one per todo, all in the `tekton/` directory
