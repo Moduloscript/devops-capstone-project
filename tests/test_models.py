@@ -28,7 +28,9 @@ class TestAccount(unittest.TestCase):
         app.config["DEBUG"] = False
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
         app.logger.setLevel(logging.CRITICAL)
-        Account.init_db(app)
+        # Only initialize DB if it hasn't been initialized yet
+        if "sqlalchemy" not in app.extensions:
+            Account.init_db(app)
 
     @classmethod
     def tearDownClass(cls):

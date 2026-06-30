@@ -83,3 +83,17 @@ def internal_server_error(error):
         ),
         status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
+
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(error):
+    """Handles unexpected exceptions with 500_INTERNAL_SERVER_ERROR"""
+    app.logger.error("Unexpected error: %s", error)
+    return (
+        jsonify(
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            error="Internal Server Error",
+            message=str(error),
+        ),
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
