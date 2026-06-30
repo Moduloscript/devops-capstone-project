@@ -8,6 +8,7 @@ Test cases can be run with the following:
 import os
 import logging
 from unittest import TestCase
+from unittest.mock import patch
 from tests.factories import AccountFactory
 from service.common import status  # HTTP Status Codes
 from service.models import db, Account, init_db
@@ -105,9 +106,11 @@ class TestAccountService(TestCase):
         # Make sure location header is set
         location = response.headers.get("Location", None)
         self.assertIsNotNone(location)
+        self.assertIn("/accounts/", location)
 
         # Check the data is correct
         new_account = response.get_json()
+        self.assertIn(str(new_account["id"]), location)
         self.assertEqual(new_account["name"], account.name)
         self.assertEqual(new_account["email"], account.email)
         self.assertEqual(new_account["address"], account.address)
@@ -214,4 +217,64 @@ class TestAccountService(TestCase):
         # Check for the CORS header
         self.assertEqual(response.headers.get('Access-Control-Allow-Origin'), '*')
 
-    # ADD YOUR TEST CASES HERE ...
+    def test_method_not_allowed(self):
+        """It should not allow an illegal method call"""
+        response = self.client.patch(f"{BASE_URL}/0")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        data = response.get_json()
+        self.assertEqual(data["error"], "Method not Allowed")
+
+    @patch("service.routes.Account.all")
+    def test_internal_server_error(self, mock_all):
+        """It should handle unexpected server errors"""
+        mock_all.side_effect = Exception("Internal Server Error")
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        data = response.get_json()
+        self.assertEqual(data["error"], "Internal Server Error")
+
+    def test_update_account_bad_content_type(self):
+        """It should not Update an Account with the wrong content type"""
+        account = self._create_accounts(1)[0]
+        response = self.client.put(
+            f"{BASE_URL}/{account.id}",
+            data="<html>not json</html>",
+            content_type="text/html"
+        )
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_update_account_bad_data(self):
+        """It should not Update an Account with bad data"""
+        account = self._create_accounts(1)[0]
+        response = self.client.put(
+            f"{BASE_URL}/{account.id}",
+            json={"name": "missing fields"},
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_account_malformed_json(self):
+        """It should not Create an Account with malformed JSON"""
+        response = self.client.post(
+            BASE_URL,
+            data="{not valid json",
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_account_empty_body(self):
+        """It should not Create an Account with an empty body"""
+        response = self.client.post(
+            BASE_URL,
+            data="",
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_delete_then_read_returns_404(self):
+        """It should Delete an Account and then return 404 on Read"""
+        account = self._create_accounts(1)[0]
+        delete_resp = self.client.delete(f"{BASE_URL}/{account.id}")
+        self.assertEqual(delete_resp.status_code, status.HTTP_204_NO_CONTENT)
+        read_resp = self.client.get(f"{BASE_URL}/{account.id}")
+        self.assertEqual(read_resp.status_code, status.HTTP_404_NOT_FOUND)

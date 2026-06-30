@@ -1,9 +1,0 @@
-HTTP/1.1 201 CREATED
-Server: Werkzeug/3.1.8 Python/3.12.2
-Date: Tue, 23 Jun 2026 05:57:51 GMT
-Content-Type: application/json
-Content-Length: 128
-Location: /
-Connection: close
-
-{"address":"123 Main St.","date_joined":"2026-06-23","email":"john@doe.com","id":3,"name":"John Doe","phone_number":"555-1212"}

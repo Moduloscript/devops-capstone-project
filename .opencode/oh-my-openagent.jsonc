@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
+  "team_mode": {
+    "enabled": true,
+    "max_parallel_members": 4,
+  },
+  "features": {
+    "hashline_edits": true,
+    "todo_enforcer": true,
+    "comment_checker": true,
+    "ralph_loop": true,
+  },
+  "rules_injection": {
+    "enabled": true,
+    "files": ["AGENTS.md", "CLAUDE.md"],
+  },
+}

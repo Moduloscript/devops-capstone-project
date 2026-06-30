@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pipeline
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pipeline
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - services
+      - configmaps
+      - secrets
+    verbs:
+      - get
+      - create
+      - update
+      - patch
+      - list
+      - delete
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+    verbs:
+      - get
+      - create
+      - update
+      - patch
+      - list
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pipeline
+subjects:
+  - kind: ServiceAccount
+    name: pipeline
+roleRef:
+  kind: Role
+  name: pipeline
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pipeline-clustertasks
+rules:
+  - apiGroups: ["tekton.dev"]
+    resources:
+      - clustertasks
+    verbs:
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pipeline-clustertasks
+subjects:
+  - kind: ServiceAccount
+    name: pipeline
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: pipeline-clustertasks
+  apiGroup: rbac.authorization.k8s.io

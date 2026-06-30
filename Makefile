@@ -1,4 +1,4 @@
-.PHONY: all help install venv run
+.PHONY: all help install venv run git-clone deploy deploy-oc
 
 help: ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-\\.]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
@@ -23,6 +23,11 @@ clustertasks: ## Create Tekton Cluster Tasks
 	$(info Creating Tekton Cluster Tasks...)
 	wget -qO - https://raw.githubusercontent.com/tektoncd/catalog/main/task/openshift-client/0.2/openshift-client.yaml | sed 's/kind: Task/kind: ClusterTask/g' | kubectl create -f -
 	wget -qO - https://raw.githubusercontent.com/tektoncd/catalog/main/task/buildah/0.4/buildah.yaml | sed 's/kind: Task/kind: ClusterTask/g' | kubectl create -f -
+
+.PHONY: git-clone
+git-clone: ## Install git-clone Tekton Task
+	$(info Installing git-clone task...)
+	kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.8/git-clone.yaml
 
 .PHONY: build
 build: ## Build a Docker image
@@ -70,3 +75,14 @@ db: ## Run PostgreSQL in Docker
 		-e POSTGRES_PASSWORD=postgres \
 		-v postgresql:/var/lib/postgresql/data \
 		postgres:alpine
+
+.PHONY: deploy
+deploy: ## Deploy to K3d cluster
+	$(info Deploying to K3d cluster...)
+	kustomize build deploy/overlays/k3d | kubectl apply -f -
+	kubectl get pods -l app=accounts
+
+.PHONY: deploy-oc
+deploy-oc: ## Deploy to OpenShift cluster
+	$(info Deploying to OpenShift cluster...)
+	kustomize build deploy/overlays/openshift | oc apply -f -

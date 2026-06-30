@@ -1,0 +1,17 @@
+.git/
+__pycache__/
+*.pyc
+.pytest_cache/
+tests/
+venv/
+.venv/
+ENV/
+env/
+.omo/
+.opencode/
+plans/
+deploy/
+tekton/
+bin/
+.github/
+*.md

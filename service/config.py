@@ -20,4 +20,8 @@ SQLALCHEMY_DATABASE_URI = DATABASE_URI
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Secret for session management
-SECRET_KEY = os.getenv("SECRET_KEY", "s3cr3t-key-shhhh")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    import warnings
+    warnings.warn("SECRET_KEY not set — using insecure default for development only")
+    SECRET_KEY = "s3cr3t-key-shhhh"

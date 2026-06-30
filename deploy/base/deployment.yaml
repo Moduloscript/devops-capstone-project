@@ -16,13 +16,18 @@ spec:
     spec:
       containers:
         - name: accounts
-          image: us.icr.io/accounts-namespace/accounts:2
+          image: accounts:PLACEHOLDER
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
             - name: DATABASE_URI
               value: "postgresql://postgres:postgres@postgresql:5432/accounts"
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: SECRET_KEY
           livenessProbe:
             httpGet:
               path: /health

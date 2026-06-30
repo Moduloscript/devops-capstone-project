@@ -1,0 +1,43 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: nosetests
+spec:
+  description: This task will run nose tests with a PostgreSQL sidecar.
+  workspaces:
+    - name: source
+  params:
+    - name: image
+      description: The container image to use for running tests
+      default: "python:3.9-slim"
+    - name: database-url
+      description: The database URL for tests
+      default: "postgresql://postgres:postgres@localhost:5432/testdb"
+    - name: requirements
+      description: The name of the requirements file
+      default: "requirements.txt"
+  steps:
+    - name: nosetests
+      image: $(params.image)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: DATABASE_URI
+          value: $(params.database-url)
+      script: |
+        #!/bin/bash
+        set -e
+        pip install --no-cache-dir -r $(params.requirements)
+        until python -c "import socket; socket.create_connection(('localhost', 5432), timeout=1)" 2>/dev/null; do
+          echo "Waiting for PostgreSQL..."
+          sleep 1
+        done
+        nosetests -v --with-spec --spec-color --with-coverage --cover-package=service
+  sidecars:
+    - name: postgres
+      image: postgres:alpine
+      env:
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_DB
+          value: testdb

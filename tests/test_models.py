@@ -5,6 +5,7 @@ Test cases for Account Model
 import logging
 import unittest
 import os
+from datetime import date
 from service import app
 from service.models import Account, DataValidationError, db
 from tests.factories import AccountFactory
@@ -175,3 +176,58 @@ class TestAccount(unittest.TestCase):
         """It should not Deserialize an account with a TypeError"""
         account = Account()
         self.assertRaises(DataValidationError, account.deserialize, [])
+
+    def test_account_repr(self):
+        """It should return the correct string representation of an Account"""
+        account = Account(name="Test Account")
+        account.id = 42
+        self.assertEqual(repr(account), "<Account Test Account id=[42]>")
+
+    def test_find_by_name_no_match(self):
+        """It should return an empty list when no Account matches the name"""
+        result = Account.find_by_name("nonexistent").all()
+        self.assertEqual(len(result), 0)
+
+    def test_find_by_name_multiple_matches(self):
+        """It should return all Accounts that match the given name"""
+        name = "John Doe"
+        account1 = AccountFactory(name=name)
+        account2 = AccountFactory(name=name)
+        account1.create()
+        account2.create()
+        result = Account.find_by_name(name).all()
+        self.assertEqual(len(result), 2)
+
+    def test_deserialize_with_date_joined(self):
+        """It should deserialize an account with a specific date_joined"""
+        account = Account()
+        account.deserialize({
+            "name": "Test",
+            "email": "test@test.com",
+            "address": "123 Main St",
+            "phone_number": "555-5555",
+            "date_joined": "2025-01-15"
+        })
+        self.assertEqual(account.date_joined, date(2025, 1, 15))
+
+    def test_deserialize_without_date_joined(self):
+        """It should default date_joined to today when not provided"""
+        account = Account()
+        account.deserialize({
+            "name": "Test",
+            "email": "test@test.com",
+            "address": "123 Main St",
+            "phone_number": "555-5555"
+        })
+        self.assertEqual(account.date_joined, date.today())
+
+    def test_deserialize_with_phone_none(self):
+        """It should allow phone_number to be None"""
+        account = Account()
+        account.deserialize({
+            "name": "Test",
+            "email": "test@test.com",
+            "address": "123 Main St",
+            "phone_number": None
+        })
+        self.assertIsNone(account.phone_number)

@@ -2,11 +2,14 @@
 # This pipeline needs the following tasks from Tekton Catalog
 #   - git-clone
 #   - flake8
+#   - nosetests
+#   - buildah
+#   - openshift-client
 #
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
-metadata:  
+metadata:
   name: cd-pipeline
 spec:
   workspaces:
@@ -15,18 +18,20 @@ spec:
     - name: repo-url
     - name: branch
       default: main
+    - name: image-tag
+      default: "1.0"
   tasks:
     - name: init
       workspaces:
         - name: source
-          workspace: pipeline-workspace          
+          workspace: pipeline-workspace
       taskRef:
         name: cleanup
 
     - name: clone
       workspaces:
         - name: output
-          workspace: pipeline-workspace          
+          workspace: pipeline-workspace
       taskRef:
         name: git-clone
       params:
@@ -40,12 +45,12 @@ spec:
     - name: lint
       workspaces:
         - name: source
-          workspace: pipeline-workspace          
+          workspace: pipeline-workspace
       taskRef:
         name: flake8
       params:
       - name: image
-        value: us.icr.io/accounts-namespace/accounts:2
+        value: python:3.9-slim
       - name: args
         value:
           - --count
@@ -54,3 +59,57 @@ spec:
           - --statistics
       runAfter:
         - clone
+
+    - name: test
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: nosetests
+      params:
+      - name: image
+        value: python:3.9-slim
+      - name: database-url
+        value: postgresql://postgres:postgres@localhost:5432/testdb
+      - name: requirements
+        value: requirements.txt
+      runAfter:
+        - clone
+
+    - name: build-image
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      params:
+      - name: IMAGE
+        value: localhost:32000/accounts:$(params.image-tag)
+      - name: DOCKERFILE
+        value: ./Dockerfile
+      - name: CONTEXT
+        value: .
+      - name: TLSVERIFY
+        value: "false"
+      runAfter:
+        - lint
+        - test
+
+    - name: deploy
+      workspaces:
+        - name: manifest-dir
+          workspace: pipeline-workspace
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask
+      params:
+      - name: SCRIPT
+        value: |
+          set -e
+          kubectl apply -k deploy/overlays/k3d
+          kubectl set image deployment/accounts app=localhost:32000/accounts:$(params.image-tag) --record
+          kubectl rollout status deployment/accounts --timeout=300s
+          kubectl get pods -l app=accounts
+      runAfter:
+        - build-image

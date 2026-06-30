@@ -110,3 +110,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Kustomize secret env files
+deploy/overlays/*/secret.env
+# Sealed secrets (decrypted)
+deploy/overlays/openshift/*.decrypted.yaml
