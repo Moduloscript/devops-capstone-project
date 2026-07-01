@@ -11,6 +11,12 @@ images:
     newName: us.icr.io/accounts-namespace/accounts
     newTag: "2"
 
+secretGenerator:
+  - name: app-secrets
+    envs:
+      - secret.env
+    type: Opaque
+
 patches:
   - patch: |-
       - op: add

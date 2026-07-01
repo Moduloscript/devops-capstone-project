@@ -12,6 +12,12 @@ images:
     newName: us.icr.io/accounts-namespace/accounts
     newTag: "2"
 
+secretGenerator:
+  - name: app-secrets
+    envs:
+      - secret.env
+    type: Opaque
+
 replicas:
   - name: accounts
     count: 3
