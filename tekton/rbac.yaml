@@ -15,6 +15,7 @@ rules:
       - services
       - configmaps
       - secrets
+      - persistentvolumeclaims
     verbs:
       - get
       - create
@@ -25,6 +26,16 @@ rules:
   - apiGroups: ["apps"]
     resources:
       - deployments
+    verbs:
+      - get
+      - create
+      - update
+      - patch
+      - list
+      - delete
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
     verbs:
       - get
       - create
