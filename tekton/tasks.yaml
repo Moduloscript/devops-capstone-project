@@ -64,7 +64,7 @@ spec:
 
         echo "=== Updating deployment image ==="
         kubectl set image deployment/accounts \
-          app=us.icr.io/accounts-namespace/accounts:$(params.image-tag) \
+          accounts=us.icr.io/accounts-namespace/accounts:$(params.image-tag) \
           --record
 
         echo "=== Waiting for rollout to complete ==="
