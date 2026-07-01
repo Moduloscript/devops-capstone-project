@@ -51,3 +51,21 @@ patches:
     target:
       kind: Deployment
       name: accounts
+  # Add hostname and TLS to ingress for local development
+  - patch: |-
+      - op: add
+        path: /spec/rules/0/host
+        value: accounts.localhost
+    target:
+      kind: Ingress
+      name: accounts
+  - patch: |-
+      - op: add
+        path: /spec/tls
+        value:
+          - hosts:
+              - accounts.localhost
+            secretName: accounts-tls
+    target:
+      kind: Ingress
+      name: accounts

@@ -118,6 +118,8 @@ ENV/
 
 # Kustomize secret env files
 deploy/overlays/*/secret.env
+# TLS certificate artifacts (generated, not committed)
+deploy/overlays/*/accounts-tls.*
 # Sealed secrets (decrypted)
 deploy/overlays/openshift/*.decrypted.yaml
 
