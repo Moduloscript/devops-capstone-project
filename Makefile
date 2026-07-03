@@ -1,4 +1,4 @@
-.PHONY: all help install venv run git-clone deploy deploy-oc
+.PHONY: all help install venv run git-clone deploy deploy-oc login-ibm login-ibm-ci build-ibm push-ibm deploy-ibm cluster-create-ibm cluster-config-ibm cleanup-ibm
 
 help: ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-\\.]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
@@ -86,3 +86,59 @@ deploy: ## Deploy to K3d cluster
 deploy-oc: ## Deploy to OpenShift cluster
 	$(info Deploying to OpenShift cluster...)
 	kustomize build deploy/overlays/openshift | oc apply -f -
+
+##@ IBM Cloud
+
+.PHONY: login-ibm
+login-ibm: ## Log in to IBM Cloud (interactive)
+	$(info Logging in to IBM Cloud...)
+	ibmcloud login --sso
+	ibmcloud target -r us-south -g accounts-rg
+
+.PHONY: login-ibm-ci
+login-ibm-ci: ## Log in to IBM Cloud (non-interactive for CI/CD)
+	$(info Logging in to IBM Cloud with API key...)
+	ibmcloud login --apikey @$(IBMCLOUD_API_KEY_FILE)
+	ibmcloud target -r us-south -g accounts-rg
+
+.PHONY: build-ibm
+build-ibm: ## Build and tag image for IBM Cloud Container Registry
+	$(info Building and tagging image for IBM Cloud...)
+	docker build --rm --pull --tag accounts:latest .
+	docker tag accounts:latest us.icr.io/accounts-namespace/accounts:latest
+
+.PHONY: push-ibm
+push-ibm: ## Push image to IBM Cloud Container Registry
+	$(info Pushing image to IBM Cloud Container Registry...)
+	ibmcloud cr login
+	docker push us.icr.io/accounts-namespace/accounts:latest
+
+.PHONY: deploy-ibm
+deploy-ibm: ## Deploy to IBM Cloud IKS cluster
+	$(info Deploying to IBM Cloud IKS cluster...)
+	kustomize build deploy/overlays/ibmcloud | kubectl apply -f -
+	kubectl get pods -n accounts-prod -l app=accounts
+
+.PHONY: cluster-create-ibm
+cluster-create-ibm: ## Create IKS VPC cluster (requires VPC_ID and SUBNET_ID env vars)
+	$(info Creating IKS VPC cluster...)
+	ibmcloud ks cluster create vpc-gen2 \
+		--name accounts-cluster \
+		--zone us-south-1 \
+		--flavor bx2.4x16 \
+		--workers 1 \
+		--vpc-id $(VPC_ID) \
+		--subnet-id $(SUBNET_ID) \
+		--public-service-endpoint
+
+.PHONY: cluster-config-ibm
+cluster-config-ibm: ## Download IBM Cloud cluster kubeconfig
+	$(info Downloading cluster kubeconfig...)
+	ibmcloud ks cluster config -c accounts-cluster
+
+.PHONY: cleanup-ibm
+cleanup-ibm: ## Delete all IBM Cloud resources (cluster, images, namespace)
+	$(info Cleaning up IBM Cloud resources...)
+	ibmcloud ks cluster rm -c accounts-cluster -f
+	ibmcloud cr image-rm us.icr.io/accounts-namespace/accounts:latest
+	ibmcloud cr namespace-rm accounts-namespace

@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: accounts-cd-ibmcloud-
+spec:
+  serviceAccountName: pipeline
+  pipelineRef:
+    name: cd-pipeline
+  workspaces:
+    - name: pipeline-workspace
+      persistentVolumeClaim:
+        claimName: pipelinerun-pvc
+    - name: docker-credentials
+      secret:
+        secretName: ibmcloud-dockerconfig
+  params:
+    - name: repo-url
+      value: https://github.com/Moduloscript/devops-capstone-project
+    - name: branch
+      value: main
+    - name: image-tag
+      value: "1.0"
+    - name: kustomize-dir
+      value: deploy/overlays/ibmcloud

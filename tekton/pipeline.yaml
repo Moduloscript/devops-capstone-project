@@ -28,6 +28,8 @@ spec:
       default: main
     - name: image-tag
       default: "2"
+    - name: kustomize-dir
+      default: deploy/overlays/k3d
   tasks:
     - name: init
       workspaces:
@@ -114,5 +116,7 @@ spec:
       params:
         - name: image-tag
           value: $(params.image-tag)
+        - name: kustomize-dir
+          value: $(params.kustomize-dir)
       runAfter:
         - build-image
